@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getEvent(eventId) {
+      return get(/databases/$(database)/documents/events/$(eventId));
+    }
+
+    function isParentEventMember(eventId) {
+      let eventDocPath = /databases/$(database)/documents/events/$(eventId);
+      return isAuthenticated() && (
+        (exists(eventDocPath) && (
+          get(eventDocPath).data.ownerId == request.auth.uid ||
+          (get(eventDocPath).data.collaborators is list && request.auth.uid in get(eventDocPath).data.collaborators)
+        )) ||
+        (request.resource != null && request.resource.data.ownerId == request.auth.uid) ||
+        (resource != null && resource.data.ownerId == request.auth.uid)
+      );
+    }
+
+    // Health check ping for testConnection()
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // User Profile
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Master Events
+    match /events/{eventId} {
+      allow get: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.collaborators is list && request.auth.uid in resource.data.collaborators)
+      );
+      allow list: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.collaborators is list && request.auth.uid in resource.data.collaborators)
+      );
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // Sub-collections inherit Event Member access
+      match /budgetItems/{itemId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /tasks/{taskId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /vendors/{vendorId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /guests/{guestId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /decor/{decorId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /invitations/{invitationId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /menu/{menuId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /documents/{docId} {
+        allow read, write: if isParentEventMember(eventId);
+      }
+
+      match /collaborators/{collaboratorId} {
+        allow read: if isParentEventMember(eventId);
+        allow write: if isAuthenticated() && getEvent(eventId).data.ownerId == request.auth.uid;
+      }
+
+      match /activity/{actId} {
+        allow read, create: if isParentEventMember(eventId);
+      }
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "User profile and metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "createdAt": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["id", "email"]
+    },
+    "event": {
+      "title": "Event",
+      "description": "Master event dossier",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique event ID" },
+        "name": { "type": "string", "description": "Name of the event" },
+        "type": { "type": "string", "enum": ["wedding", "birthday", "college", "community", "custom"] },
+        "date": { "type": "string", "description": "Event date" },
+        "startTime": { "type": "string", "description": "Event start time" },
+        "endTime": { "type": "string", "description": "Event end time" },
+        "city": { "type": "string", "description": "City or destination" },
+        "venue": { "type": "string", "description": "Venue name" },
+        "guestCount": { "type": "number", "description": "Target guest count" },
+        "totalBudget": { "type": "number", "description": "Total budget limit" },
+        "currency": { "type": "string", "enum": ["INR", "USD", "EUR", "GBP", "AED"] },
+        "theme": { "type": "string", "description": "Theme aesthetic" },
+        "setting": { "type": "string", "enum": ["indoor", "outdoor", "both"] },
+        "ownerId": { "type": "string", "description": "Owner UID" },
+        "status": { "type": "string", "enum": ["planning", "confirmed", "in_progress", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "description": "Creation ISO timestamp" },
+        "updatedAt": { "type": "string", "description": "Last updated ISO timestamp" }
+      },
+      "required": ["id", "name", "type", "date", "guestCount", "totalBudget", "currency", "ownerId"]
+    },
+    "budgetItem": {
+      "title": "BudgetItem",
+      "description": "Individual budget item and expense entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "category": { "type": "string" },
+        "name": { "type": "string" },
+        "estimatedCost": { "type": "number" },
+        "actualCost": { "type": "number" },
+        "advancePaid": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "partial", "paid"] },
+        "dueDate": { "type": "string" },
+        "vendorName": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "eventId", "category", "name", "estimatedCost", "actualCost"]
+    },
+    "task": {
+      "title": "Task",
+      "description": "Milestone planning task",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed"] },
+        "assignedTo": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "eventId", "title", "dueDate", "priority", "status"]
+    },
+    "vendor": {
+      "title": "Vendor",
+      "description": "Engaged vendor or partner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "quotationAmount": { "type": "number" },
+        "servicesOffered": { "type": "string" },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "partial", "paid"] },
+        "bookingStatus": { "type": "string", "enum": ["contacted", "shortlisted", "booked", "rejected"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "eventId", "name", "category", "quotationAmount", "bookingStatus"]
+    },
+    "guest": {
+      "title": "Guest",
+      "description": "Event guest and RSVP record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "invitationStatus": { "type": "string", "enum": ["not_sent", "sent"] },
+        "rsvpStatus": { "type": "string", "enum": ["pending", "accepted", "declined"] },
+        "attendanceStatus": { "type": "string", "enum": ["pending", "confirmed", "absent"] },
+        "dietaryPreference": { "type": "string" },
+        "groupCategory": { "type": "string" },
+        "tableNumber": { "type": "string" },
+        "plusOnes": { "type": "number" }
+      },
+      "required": ["id", "eventId", "name", "invitationStatus", "rsvpStatus"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profile documentation"
+    },
+    "/events/{eventId}": {
+      "schema": "event",
+      "description": "Root event document with metadata"
+    },
+    "/events/{eventId}/budgetItems/{itemId}": {
+      "schema": "budgetItem",
+      "description": "Subcollection of budget line items"
+    },
+    "/events/{eventId}/tasks/{taskId}": {
+      "schema": "task",
+      "description": "Subcollection of milestone tasks"
+    },
+    "/events/{eventId}/vendors/{vendorId}": {
+      "schema": "vendor",
+      "description": "Subcollection of vendor listings"
+    },
+    "/events/{eventId}/guests/{guestId}": {
+      "schema": "guest",
+      "description": "Subcollection of guest and RSVP entries"
+    }
+  }
+}

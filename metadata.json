@@ -1,0 +1,6 @@
+{
+  "name": "Gatherly AI",
+  "description": "Plan Smarter. Celebrate Better. Complete GenAI-powered event planning platform for weddings, birthdays, festivals, and community celebrations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
